@@ -1,0 +1,28 @@
+{
+  "name": "npm-dependencies-spreadsheet",
+  "version": "0.0.1",
+  "description": "An npm package to publish dependencies to an online spreadsheet for tracking and review.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/flacnut/npm-dependencies-spreadsheet.git"
+  },
+  "author": "flacnut",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/flacnut/npm-dependencies-spreadsheet/issues"
+  },
+  "homepage": "https://github.com/flacnut/npm-dependencies-spreadsheet#readme",
+  "dependencies": {
+    "async": "^2.0.0-rc.3",
+    "google-spreadsheet": "^2.0.1",
+    "lodash": "^4.11.1"
+  },
+  "devDependencies": {
+    "istanbul": "^0.4.3",
+    "mocha": "^2.4.5"
+  }
+}
