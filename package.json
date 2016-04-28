@@ -1,6 +1,6 @@
 {
   "name": "npm-dependencies-spreadsheet",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "An npm package to publish dependencies to an online spreadsheet for tracking and review.",
   "main": "index.js",
   "scripts": {

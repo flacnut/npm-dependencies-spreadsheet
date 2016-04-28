@@ -57,7 +57,7 @@ module.exports = function npmDependenciesSpreadsheet(options, callback) {
       };
     });
 
-    if (!!options.skipSubDependencies) {
+    if (!options.skipSubDependencies) {
       // Add indirect dependencies
       shell.exec(`find ${options.basePath}/node_modules/**/package.json`, {silent: true},
         (code, output) => {
