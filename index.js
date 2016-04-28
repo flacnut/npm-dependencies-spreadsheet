@@ -120,6 +120,7 @@ module.exports = function npmDependenciesSpreadsheet(options, callback) {
   function readDependencyRows(next) {
     var query_options = {
       offset: 1,
+      limit: 1,
       query: `repository=${repoName}`,
       orderby: 'name'
     };
@@ -133,18 +134,13 @@ module.exports = function npmDependenciesSpreadsheet(options, callback) {
       ensureRowsDeleted(rows);
     });
 
-    // The google API doesn't guarantee that a row will be deleted.
-    // After trying to delete all rows, check if we missed any, and
-    // then delete them. When 0 rows are returned, we continue with
-    // 'next'. This is horrendous.
+    // Once you delete a row, google API may incorrectly delete future rows.
+    // The only garuntee is to fetch a single row then delete it.
     function ensureRowsDeleted(rows) {
       async.whilst(
         () => rows.length,
         (cb) => {
-          async.eachSeries(rows, (row, delCb) => {
-            console.dir('deleting row ' + row.repository);
-            row.del(delCb);
-          }, () => {
+          rows[0].del(() => {
             sheet.getRows(query_options, (err, _rows) => {
               rows = _rows;
               cb();
