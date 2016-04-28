@@ -57,42 +57,46 @@ module.exports = function npmDependenciesSpreadsheet(options, callback) {
       };
     });
 
-    // Add indirect dependencies
-    shell.exec(`find ${options.basePath}/node_modules/**/package.json`, {silent: true},
-      (code, output) => {
-      _.each(output.split('\n'), (pkgPath) => {
-        var dep, pkg;
+    if (!!options.skipSubDependencies) {
+      // Add indirect dependencies
+      shell.exec(`find ${options.basePath}/node_modules/**/package.json`, {silent: true},
+        (code, output) => {
+        _.each(output.split('\n'), (pkgPath) => {
+          var dep, pkg;
 
-        // Ignore it if it's not a package
-        if (pkgPath.indexOf('package.json') === -1) {
-          return;
-        }
+          // Ignore it if it's not a package
+          if (pkgPath.indexOf('package.json') === -1) {
+            return;
+          }
 
-        pkg = require(pkgPath);
+          pkg = require(pkgPath);
 
-        // Don't overwrite direct deps
-        if (deps[pkg.name] && deps[pkg.name].version === pkg.version) {
-          return;
-        }
+          // Don't overwrite direct deps
+          if (deps[pkg.name] && deps[pkg.name].version === pkg.version) {
+            return;
+          }
 
-        dep = {
-          repository: repoName,
-          name: pkg.name,
-          version: pkg.version,
-          license: getLicense(pkg),
-          url: getUrl(pkg),
-          direct: false
-        };
+          dep = {
+            repository: repoName,
+            name: pkg.name,
+            version: pkg.version,
+            license: getLicense(pkg),
+            url: getUrl(pkg),
+            direct: false
+          };
 
-        if (deps[dep.name] && deps[dep.name].version !== dep.version) {
-          deps[`${dep.name}_${dep.version}`] = dep;
-        } else {
-          deps[dep.name] = dep;
-        }
+          if (deps[dep.name] && deps[dep.name].version !== dep.version) {
+            deps[`${dep.name}_${dep.version}`] = dep;
+          } else {
+            deps[dep.name] = dep;
+          }
+        });
+
+        return next();
       });
-
+    } else {
       return next();
-    });
+    }
 
     function getLicense(pkg) {
       if (pkg.license) {
@@ -137,7 +141,10 @@ module.exports = function npmDependenciesSpreadsheet(options, callback) {
       async.whilst(
         () => rows.length,
         (cb) => {
-          async.eachSeries(rows, (row, delCb) => row.del(delCb), () => {
+          async.eachSeries(rows, (row, delCb) => {
+            console.dir('deleting row ' + row.repository);
+            row.del(delCb);
+          }, () => {
             sheet.getRows(query_options, (err, _rows) => {
               rows = _rows;
               cb();
@@ -166,8 +173,10 @@ module.exports = function npmDependenciesSpreadsheet(options, callback) {
   }
 
   function onUpdatedOrError(err) {
-    console.log(`An error was encountered.`);
-    console.error(err);
+    if (err) {
+      console.log(`An error was encountered.`);
+      console.error(err);
+    }
     return callback(err);
   }
 };
